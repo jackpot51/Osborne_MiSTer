@@ -17,9 +17,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .find_var(&["testbench", "hsync"])
         .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "no hsync found"))?
         .code;
-    let clk_dot_code = header
-        .find_var(&["testbench", "clk_dot"])
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "no clk_dot found"))?
+    let clock_dot_code = header
+        .find_var(&["testbench", "clock_dot"])
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "no clock_dot found"))?
         .code;
     let video_code = header
         .find_var(&["testbench", "video"])
@@ -59,7 +59,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             row += 1;
                         }
                     }
-                } else if code == clk_dot_code {
+                } else if code == clock_dot_code {
                     if row < height && col < width {
                         // Clear pixel to black
                         pixels[(row * width + col) * 4 + 0] = 0x00;

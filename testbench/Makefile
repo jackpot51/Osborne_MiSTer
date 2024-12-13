@@ -2,7 +2,7 @@ CC=sdcc -mz80 --code-loc 0 --data-loc 0 --no-std-crt0 --sdcccall 1
 GHDL=ghdl-llvm
 GHDL_ARGS=-fsynopsys --std=08 --workdir=build
 
-all: build/boot.txt build/character_rom.txt
+all: build/boot_rom.txt build/char_rom.txt
 	mkdir -p build
 	$(GHDL) -a $(GHDL_ARGS) ../rtl/T80/T80_Pack.vhd
 	$(GHDL) -a $(GHDL_ARGS) ../rtl/T80/T80_ALU.vhd
@@ -10,6 +10,7 @@ all: build/boot.txt build/character_rom.txt
 	$(GHDL) -a $(GHDL_ARGS) ../rtl/T80/T80_Reg.vhd
 	$(GHDL) -a $(GHDL_ARGS) ../rtl/T80/T80.vhd
 	$(GHDL) -a $(GHDL_ARGS) ../rtl/T80/T80a.vhd
+	$(GHDL) -a $(GHDL_ARGS) ../rtl/osborne_1.vhd
 	$(GHDL) -a $(GHDL_ARGS) ram.vhd
 	$(GHDL) -a $(GHDL_ARGS) rom.vhd
 	$(GHDL) -a $(GHDL_ARGS) rom_async.vhd
@@ -36,7 +37,7 @@ build/%.bin: build/%.ihx
 build/%.txt: build/%.bin
 	xxd -b -c 1 $< | cut -d ' ' -f 2 > $@
 
-build/character_rom.ihx: ../rom/char_rom.hex
+build/char_rom.ihx: ../rom/char_rom.hex
 	cp -v $< $@
 
 clean:
