@@ -210,7 +210,7 @@ localparam CONF_STR = {
 	"-;",
 	"O[122:121],Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
 	"O[2],TV Mode,NTSC,PAL;",
-	"O[4:3],Noise,White,Red,Green,Blue;",
+	"O[4:3],Color,White,Red,Green,Blue;",
 	"-;",
 	"P1,Test Page 1;",
 	"P1-;",

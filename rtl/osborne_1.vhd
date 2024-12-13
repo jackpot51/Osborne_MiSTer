@@ -43,7 +43,7 @@ begin
     z80a: entity work.T80a port map (
         reset_n => reset_n,
         R800_mode => '0',
-        CLK_n => clock_cpu,
+        CLK_n => clock_div(1),
         WAIT_n => '1',
         INT_n => '1',
         NMI_n => '1',
