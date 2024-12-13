@@ -36,7 +36,7 @@ always @(posedge clk) begin
 		vc <= 0;
 	end
 	else if(ce_pix) begin
-		if(hc == 637) begin
+		if(hc == 511) begin
 			hc <= 0;
 			if(vc == (pal ? (scandouble ? 623 : 311) : (scandouble ? 523 : 261))) begin 
 				vc <= 0;
@@ -53,10 +53,10 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (hc == 529) HBlank <= 1;
+	if (hc == 416) HBlank <= 1;
 		else if (hc == 0) HBlank <= 0;
 
-	if (hc == 544) begin
+	if (hc == 437) begin
 		HSync <= 1;
 
 		if(pal) begin
@@ -75,13 +75,14 @@ always @(posedge clk) begin
 		end
 	end
 	
-	if (hc == 590) HSync <= 0;
+	if (hc == 473) HSync <= 0;
 end
 
 reg  [7:0] cos_out;
 wire [5:0] cos_g = cos_out[7:3]+6'd32;
 cos cos(vvc + {vc>>scandouble, 2'b00}, cos_out);
 
-assign video = (cos_g >= rnd_c) ? {cos_g - rnd_c, 2'b00} : 8'd0;
+//assign video = (cos_g >= rnd_c) ? {cos_g - rnd_c, 2'b00} : 8'd0;
+assign video = (vc[0] == hc[0]) ? 8'd255 : 8'd0;
 
 endmodule
