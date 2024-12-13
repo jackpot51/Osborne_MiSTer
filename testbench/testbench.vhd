@@ -17,8 +17,6 @@ architecture behavior of testbench is
     -- Clocks
     signal clock_62ns: std_logic := '0';
     signal clock_dot: std_logic;
-    signal CLK_MEM: std_logic := '0';
-    signal CLK_CHAR: std_logic := '0';
 
     -- ROM
     signal boot_rom_read_n: std_logic;
@@ -62,22 +60,6 @@ begin
         ram_read_n => ram_read_n,
         ram_write_n => ram_write_n
     );
-
-    -- Clocks
-
-    clock_mem: process(clock_cpu)
-    begin
-        if falling_edge(clock_cpu) then
-            CLK_MEM <= not CLK_MEM;
-        end if;
-    end process;
-
-    clock_char: process(CLK_MEM)
-    begin
-        if falling_edge(CLK_MEM) then
-            CLK_CHAR <= not CLK_CHAR;
-        end if;
-    end process;
 
     -- ROM (4KiB when ROM_EN_n is low)
 

@@ -30,6 +30,10 @@ architecture behavior of osborne_1 is
     signal iorq_n: std_logic;
     signal rd_n: std_logic;
     signal wr_n: std_logic;
+    signal A: std_logic_vector(15 downto 0);
+
+    -- Clocks
+    signal clock_div: std_logic_vector(1 downto 0) := "00";
 
     -- ROM
     signal rom_en_n: std_logic := '0';
@@ -48,27 +52,23 @@ begin
         IORQ_n => iorq_n,
         rd_n => rd_n,
         WR_n => wr_n,
-        A => address,
+        A => A,
         D => data
     );
+    address <= A;
 
     -- Clocks
-    clock_dot_gen: process(clock_62ns)
+    clock_gen: process(clock_62ns)
     begin
         if rising_edge(clock_62ns) then
-            clock_dot <= not clock_dot;
+            clock_div <= clock_div + 1;
         end if;
     end process;
-
-    clock_n_gen: process (clock_dot)
-    begin
-        if rising_edge(clock_dot) then
-            clock_cpu <= not clock_cpu;
-        end if;
-    end process;
+    clock_cpu <= clock_div(1);
+    clock_dot <= not clock_div(0);
 
     -- ROM (4KiB when ROM_EN_n is low)
-    rom_has_addr_n <= rom_en_n or address(15) or address(14) or address(13) or address(12);
+    rom_has_addr_n <= rom_en_n or A(15) or A(14) or A(13) or A(12);
     boot_rom_read_n <= mreq_n or rd_n or rom_has_addr_n;
 
     -- RAM
