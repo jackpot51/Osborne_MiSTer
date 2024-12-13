@@ -8,6 +8,7 @@ set_global_assignment -name VHDL_FILE rtl/T80/T80_Pack.vhd
 set_global_assignment -name VHDL_FILE rtl/T80/T80_MCode.vhd
 set_global_assignment -name VHDL_FILE rtl/T80/T80_ALU.vhd
 set_global_assignment -name VHDL_FILE rtl/T80/T80.vhd
-set_global_assignment -name QIP_FILE rtl/ram.qip
 set_global_assignment -name QIP_FILE rtl/boot_rom.qip
 set_global_assignment -name QIP_FILE rtl/char_rom.qip
+set_global_assignment -name QIP_FILE rtl/dim.qip
+set_global_assignment -name QIP_FILE rtl/ram.qip

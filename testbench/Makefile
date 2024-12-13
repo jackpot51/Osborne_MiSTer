@@ -16,7 +16,7 @@ all: build/boot_rom.txt build/char_rom.txt
 	$(GHDL) -a $(GHDL_ARGS) rom_async.vhd
 	$(GHDL) -a $(GHDL_ARGS) testbench.vhd
 	$(GHDL) -e $(GHDL_ARGS) testbench
-	$(GHDL) -r $(GHDL_ARGS) testbench --stop-time=100ms --vcd=build/testbench.vcd
+	$(GHDL) -r $(GHDL_ARGS) testbench --stop-time=200ms --vcd=build/testbench.vcd
 
 gtkwave:
 	gtkwave build/testbench.vcd
@@ -36,6 +36,9 @@ build/%.bin: build/%.ihx
 
 build/%.txt: build/%.bin
 	xxd -b -c 1 $< | cut -d ' ' -f 2 > $@
+
+build/boot_rom.ihx: ../rom/boot_rom.hex
+	cp -v $< $@
 
 build/char_rom.ihx: ../rom/char_rom.hex
 	cp -v $< $@

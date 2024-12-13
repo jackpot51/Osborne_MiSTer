@@ -23,9 +23,17 @@ architecture behavior of testbench is
     signal ROM_EN_n: std_logic := '0';
     signal ROM_HAS_ADDR_n: std_logic := '0';
 
+    -- DIM
+
+    signal dim_read_n: std_logic;
+    signal dim_write_n: std_logic;
+
     -- RAM
     signal ram_read_n: std_logic;
     signal ram_write_n: std_logic;
+
+    -- Keyboard
+    signal keyboard: std_logic_vector(63 downto 0) := (others => '0');
 
     -- Video
     signal HSYNC: std_logic := '0';
@@ -38,6 +46,7 @@ architecture behavior of testbench is
     signal VRAM_DATA: std_logic_vector(7 downto 0);
     signal CHAR_DATA: std_logic_vector(7 downto 0);
     signal VIDEO: std_logic := '0';
+    signal VIDEO_DIM: std_logic := '0';
 begin
     RESET_n <= '1' after 500 ns;
     clock_62ns <= not clock_62ns after 62 ns;
@@ -56,9 +65,16 @@ begin
         -- ROM
         boot_rom_read_n => boot_rom_read_n,
 
+        -- DIM
+        dim_read_n => dim_read_n,
+        dim_write_n => dim_write_n,
+
         -- RAM
         ram_read_n => ram_read_n,
-        ram_write_n => ram_write_n
+        ram_write_n => ram_write_n,
+    
+        -- Keyboard
+        keyboard => keyboard
     );
 
     -- ROM (4KiB when ROM_EN_n is low)
@@ -95,6 +111,28 @@ begin
         B_ADDR(11 downto 7) => VRAM_ROW(4 downto 0),
         B_ADDR(15 downto 12) => "1111",
         B_DATA => VRAM_DATA
+    );
+
+    -- Dim attribute
+
+    dim: entity work.ram
+    generic map (
+        g_ADDR_WIDTH => 12,
+        g_DATA_WIDTH => 1
+    )
+    port map (
+        A_CLK_n => clock_cpu,
+        A_RD_n => dim_read_n,
+        A_WR_n => dim_write_n,
+        A_ADDR => ADDR(11 downto 0),
+        A_DATA(0) => DATA(7),
+        --TODO: best clock to use?
+        B_CLK_n => not clock_62ns,
+        B_RD_n => '0',
+        B_WR_n => '1',
+        B_ADDR(6 downto 0) => std_logic_vector(X(9 downto 3)),
+        B_ADDR(11 downto 7) => VRAM_ROW(4 downto 0),
+        B_DATA(0) => VIDEO_DIM
     );
 
     -- Video

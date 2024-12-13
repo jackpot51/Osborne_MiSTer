@@ -25,6 +25,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .find_var(&["testbench", "video"])
         .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "no video found"))?
         .code;
+    let video_dim_code = header
+        .find_var(&["testbench", "video_dim"])
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "no video_dim found"))?
+        .code;
 
     let width = 52 * 8;
     let height = 24 * 10;
@@ -32,6 +36,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut row = 0;
     let mut col = 0;
     let mut video = false;
+    let mut video_dim = false;
     let mut images = Vec::new();
     for command_result in parser {
         //TODO: this ignores all parsing errors
@@ -68,12 +73,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         pixels[(row * width + col) * 4 + 3] = 0xFF;
                         if video {
                             // Set green channel
-                            pixels[(row * width + col) * 4 + 1] = 0xFF;
+                            pixels[(row * width + col) * 4 + 1] = if video_dim { 0xFF } else { 0x7F };
                         }
                     }
                     col += 1;
                 } else if code == video_code {
                     video = value == vcd::Value::V1;
+                } else if code == video_dim_code {
+                    video_dim = value == vcd::Value::V1;
                 }
             }
             _ => {}

@@ -105,7 +105,7 @@ always @(posedge clk) begin
 	end
 end
 
-assign video = (char_data[(3'd7 - x[2:0])] && !VBlank && !HBlank) ? 8'd255 : 8'd0;
+assign video = (char_data[(3'd7 - x[2:0])] && !VBlank && !HBlank) ? (video_dim ? 8'd255 : 8'd127) : 8'd0;
 
 // System, TODO: move to another file?
 
@@ -113,6 +113,8 @@ wire cpu_clock;
 wire [15:0] cpu_address;
 wire [7:0] cpu_data;
 wire boot_rom_read_n;
+wire dim_read_n;
+wire dim_write_n;
 wire ram_read_n;
 wire ram_write_n;
 
@@ -124,8 +126,11 @@ osborne_1 osborne_1
 	.data(cpu_data),
 	.clock_62ns(clk),
 	.boot_rom_read_n(boot_rom_read_n),
+	.dim_read_n(dim_read_n),
+	.dim_write_n(dim_write_n),
 	.ram_read_n(ram_read_n),
-	.ram_write_n(ram_write_n)
+	.ram_write_n(ram_write_n),
+	.keyboard(64'd0)
 );
 
 wire [7:0] boot_rom_data;
@@ -149,10 +154,31 @@ char_rom char_rom
 	.q(char_data)
 );
 
-wire [7:0] ram_data;
-assign cpu_data = !ram_read_n ? ram_data : 1'bZ;
 wire [15:0] video_address = {4'b1111, row_div_10[4:0], next_x[9:3]};
 wire [7:0] video_data;
+wire video_dim;
+
+wire dim_data;
+assign cpu_data = !dim_read_n ? {dim_data,7'b0000000} : 1'bZ;
+dim dim
+(
+	.address_a(cpu_address),
+	//TODO: best clock?
+	.clock_a(clk),
+	.data_a(cpu_data[7]),
+	.rden_a(!dim_read_n),
+	.wren_a(!dim_write_n),
+	.q_a(dim_data),
+
+	.address_b(video_address),
+	//TODO: best clock?
+	.clock_b(clk),
+	.rden_b(1),
+	.q_b(video_dim)
+);
+
+wire [7:0] ram_data;
+assign cpu_data = !ram_read_n ? ram_data : 1'bZ;
 ram ram
 (
 	.address_a(cpu_address),
@@ -166,7 +192,6 @@ ram ram
 	.address_b(video_address),
 	//TODO: best clock?
 	.clock_b(clk),
-	.data_b(video_data),
 	.rden_b(1),
 	.q_b(video_data)
 );

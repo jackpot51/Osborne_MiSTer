@@ -18,9 +18,16 @@ entity osborne_1 is
         -- 4 KiB boot ROM
         boot_rom_read_n: out std_logic;
 
+        -- 4 Kbit DIM
+        dim_read_n: out std_logic;
+        dim_write_n: out std_logic;
+
         -- 64 KiB RAM
         ram_read_n: out std_logic;
-        ram_write_n: out std_logic
+        ram_write_n: out std_logic;
+
+        -- Keyboard
+        keyboard: in std_logic_vector(63 downto 0)
     );
 end osborne_1;
 
@@ -37,7 +44,19 @@ architecture behavior of osborne_1 is
 
     -- ROM
     signal rom_en_n: std_logic := '0';
-    signal rom_has_addr_n: std_logic := '0';
+    signal rom_has_addr_n: std_logic;
+
+    -- DIM
+    signal dim_en_n: std_logic := '0';
+    signal dim_has_addr_n: std_logic;
+
+    -- RAM
+    signal ram_has_addr_n: std_logic;
+
+    -- MMIO
+    signal mmio_has_addr_n: std_logic;
+    signal mmio_read_n : std_logic;
+    signal mmio_write_n : std_logic;
 begin
     -- Z80 CPU
     z80a: entity work.T80a port map (
@@ -71,7 +90,63 @@ begin
     rom_has_addr_n <= rom_en_n or A(15) or A(14) or A(13) or A(12);
     boot_rom_read_n <= mreq_n or rd_n or rom_has_addr_n;
 
+    -- DIM (4kbit when DIM_EN_n is low)
+    dim_has_addr_n <= dim_en_n or (not A(15)) or (not A(14)) or (not A(13)) or (not A(12));
+    dim_read_n <= mreq_n or rd_n or dim_has_addr_n;
+    dim_write_n <= mreq_n or wr_n or dim_has_addr_n;
+
     -- RAM
-    ram_read_n <= mreq_n or rd_n or (not rom_has_addr_n);
-    ram_write_n <= mreq_n or wr_n or (not rom_has_addr_n);
+    ram_has_addr_n <= (not rom_has_addr_n) or (not dim_has_addr_n) or (not mmio_has_addr_n);
+    ram_read_n <= mreq_n or rd_n or ram_has_addr_n;
+    ram_write_n <= mreq_n or wr_n or ram_has_addr_n;
+    
+    -- MMIO
+    mmio_has_addr_n <= rom_en_n or (not rom_has_addr_n) or A(15) or A(14);
+    mmio_read_n <= mreq_n or rd_n or mmio_has_addr_n;
+    mmio_write_n <= mreq_n or wr_n or mmio_has_addr_n;
+
+    mmio: process (clock_div(1))
+    begin
+        if rising_edge(clock_div(1)) then
+            -- Handle MMIO registers
+            if (mmio_read_n = '0') then
+                case(A) is
+                    when x"2201" => data <= keyboard(7 downto 0);
+                    when x"2202" => data <= keyboard(15 downto 8);
+                    when x"2204" => data <= keyboard(23 downto 16);
+                    when x"2208" => data <= keyboard(31 downto 24);
+                    when x"2210" => data <= keyboard(39 downto 32);
+                    when x"2220" => data <= keyboard(47 downto 40);
+                    when x"2240" => data <= keyboard(55 downto 48);
+                    when x"2280" => data <= keyboard(63 downto 56);
+                    --TODO: what do undefined registers do?
+                    when others => data <= "00000000";
+                end case;
+            else
+                data <= "ZZZZZZZZ";
+            end if;
+
+            -- Handle banking
+            if (IORQ_n = '0') then
+                if (WR_n = '0') then
+                    if (A(1 downto 0) = "00") then
+                        -- Enable ROM
+                        rom_en_n <= '0';
+                    end if;
+                    if (A(1 downto 0) = "01") then
+                        -- Disable ROM
+                        rom_en_n <= '1';
+                    end if;
+                    if (A(1 downto 0) = "10") then
+                        -- Enable DIM
+                        dim_en_n <= '0';
+                    end if;
+                    if (A(1 downto 0) = "11") then
+                        -- Disable DIM
+                        dim_en_n <= '1';
+                    end if;
+                end if;
+            end if;
+        end if;
+    end process;
 end;
