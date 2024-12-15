@@ -4,6 +4,7 @@ GHDL_ARGS=-fsynopsys --std=08 --workdir=build
 
 all: build/boot_rom.txt build/char_rom.txt
 	mkdir -p build
+	$(GHDL) -a $(GHDL_ARGS) ../rtl/MC6821/pia6821.vhd
 	$(GHDL) -a $(GHDL_ARGS) ../rtl/T80/T80_Pack.vhd
 	$(GHDL) -a $(GHDL_ARGS) ../rtl/T80/T80_ALU.vhd
 	$(GHDL) -a $(GHDL_ARGS) ../rtl/T80/T80_MCode.vhd
