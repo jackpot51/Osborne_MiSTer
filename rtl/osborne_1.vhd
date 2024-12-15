@@ -99,6 +99,12 @@ begin
     ram_has_addr_n <= (not rom_has_addr_n) or (not dim_has_addr_n) or (not mmio_has_addr_n);
     ram_read_n <= mreq_n or rd_n or ram_has_addr_n;
     ram_write_n <= mreq_n or wr_n or ram_has_addr_n;
+
+    -- PIA for video
+    -- TODO: video_pia: entity work.pia6821 port map (
+        -- clk => clock_div(1),
+        -- rst => 
+    -- );
     
     -- MMIO
     mmio_has_addr_n <= rom_en_n or (not rom_has_addr_n) or A(15) or A(14);
@@ -111,6 +117,7 @@ begin
             -- Handle MMIO registers
             if (mmio_read_n = '0') then
                 case(A) is
+                    -- Keyboard
                     when x"2201" => data <= keyboard(7 downto 0);
                     when x"2202" => data <= keyboard(15 downto 8);
                     when x"2204" => data <= keyboard(23 downto 16);
@@ -119,8 +126,22 @@ begin
                     when x"2220" => data <= keyboard(47 downto 40);
                     when x"2240" => data <= keyboard(55 downto 48);
                     when x"2280" => data <= keyboard(63 downto 56);
+                    -- Video PIA
+                    --TODO when x"2C00" => data <= video_pia_a_data;
+                    --TODO when x"2C02" => data <= video_pia_b_data;
                     --TODO: what do undefined registers do?
-                    when others => data <= "00000000";
+                    when others => 
+                        report "MMIO read to undefined register " & to_hstring(A);
+                        data <= "00000000";
+                end case;
+            elsif (mmio_write_n = '0') then
+                case(A) is
+                    --TODO when x"2C00" => video_pia_a_data <= data;
+                    --TODO when x"2C01" => video_pia_a_control <= data;
+                    --TODO when x"2C02" => video_pia_b_data <= data;
+                    --TODO when x"2C03" => video_pia_b_control <= data;
+                    when others =>
+                        report "MMIO write to undefined register " & to_hstring(A) & " = " & to_hstring(data);
                 end case;
             else
                 data <= "ZZZZZZZZ";
