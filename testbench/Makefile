@@ -39,9 +39,11 @@ build/%.txt: build/%.bin
 	xxd -b -c 1 $< | cut -d ' ' -f 2 > $@
 
 build/boot_rom.ihx: ../rom/boot_rom.hex
+	mkdir -p build
 	cp -v $< $@
 
 build/char_rom.ihx: ../rom/char_rom.hex
+	mkdir -p build
 	cp -v $< $@
 
 clean:
